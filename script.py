@@ -1,13 +1,13 @@
 import xml.etree.ElementTree as ET
 
 psatsim = ET.Element("psatsim")
-config = ET.SubElement(psatsim, "config", name="Case1")
+count = 0
 
 # Loop to generate <general> blocks
-for superscalar_val in range(1, 17, 3): #1-16
-    for functional_units_val in range(1, 9, 2): #1-8
-        for reservation_val in range(1, 9, 2): #1-8
-            for reorder_buffer_val in range(1, 512, 4): #1-512
+for superscalar_val in range(1, 17): #1-16
+    for functional_units_val in range(1, 9): #1-8
+        for reservation_val in range(1, 9): #1-8
+            for reorder_buffer_val in range(1, 513): #1-512
                 # Only use f area is less than 60 mm2
                 area = (
                      (0.065 * (functional_units_val*4) * reservation_val) + 
@@ -19,6 +19,8 @@ for superscalar_val in range(1, 17, 3): #1-16
                      0.035 * reorder_buffer_val
                      ) 
                 if area <= 60:
+                    count += 1
+                    config = ET.SubElement(psatsim, "config", name="Case" + str(count))
                     general = ET.SubElement(config, "general", {
                         "superscalar": str(superscalar_val),
                         "rename": str(reorder_buffer_val),
@@ -41,13 +43,14 @@ for superscalar_val in range(1, 17, 3): #1-16
                         "branch": str(functional_units_val),
                         "memory": str(functional_units_val)
                     })
-memory = ET.SubElement(config, "memory", {
-                        "architecture": "l2"
-                    })
-ET.SubElement(memory, "system", {"latency": "5"})
-ET.SubElement(memory, "l1_code", {"hitrate": "0.970", "latency": "1"})
-ET.SubElement(memory, "l1_data", {"hitrate": "0.970", "latency": "1"})
-ET.SubElement(memory, "l2", {"hitrate": "0.940", "latency": "3"})
+                    memory = ET.SubElement(config, "memory", {
+                                            "architecture": "l2"
+                                        })
+                    ET.SubElement(memory, "system", {"latency": "5"})
+                    ET.SubElement(memory, "l1_code", {"hitrate": "0.970", "latency": "1"})
+                    ET.SubElement(memory, "l1_data", {"hitrate": "0.970", "latency": "1"})
+                    ET.SubElement(memory, "l2", {"hitrate": "0.940", "latency": "3"})
+print(count)
 
 # Save XML
 tree = ET.ElementTree(psatsim)
